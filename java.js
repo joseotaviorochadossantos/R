@@ -75,14 +75,24 @@ function updateScore() {
 }
 
 function createHeartBurst(card) {
-    const burst = document.createElement('div');
-    burst.className = 'heart-burst';
-    burst.textContent = '💖';
-    const rect = card.getBoundingClientRect();
-    burst.style.left = `${rect.left + rect.width / 2}px`;
-    burst.style.top = `${rect.top + rect.height / 2}px`;
-    document.body.appendChild(burst);
-    setTimeout(() => document.body.removeChild(burst), 1400);
+    try {
+        const burst = document.createElement('div');
+        burst.className = 'heart-burst';
+        burst.textContent = '💖';
+        const rect = card.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2 - 12;
+        const centerY = rect.top + rect.height / 2 - 12;
+        burst.style.left = centerX + 'px';
+        burst.style.top = centerY + 'px';
+        document.body.appendChild(burst);
+        setTimeout(() => {
+            if (burst.parentNode) {
+                burst.parentNode.removeChild(burst);
+            }
+        }, 1200);
+    } catch (e) {
+        console.warn('Heart burst animation error:', e);
+    }
 }
 
 function handleCardClick(card) {
