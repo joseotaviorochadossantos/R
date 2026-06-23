@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo do Desvio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>Jogo do Desvio</h1>
+        <p>Use as setas ← e → para mover. Evite os blocos vermelhos que caem.</p>
+        <div id="game">
+            <div id="player"></div>
+        </div>
+        <div class="info">
+            <span>Pontuação: <strong id="score">0</strong></span>
+            <div class="buttons">
+                <button id="startButton">Começar</button>
+                <button id="resetButton">Reiniciar</button>
+            </div>
+        </div>
+        <p id="message"></p>
+    </div>
+    <script src="java.js"></script>
+</body>
+</html>
