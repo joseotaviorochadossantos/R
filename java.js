@@ -1,124 +1,140 @@
-const game = document.getElementById('game');
-const player = document.getElementById('player');
+const board = document.getElementById('board');
 const scoreEl = document.getElementById('score');
+const movesEl = document.getElementById('moves');
 const message = document.getElementById('message');
 const startButton = document.getElementById('startButton');
 const resetButton = document.getElementById('resetButton');
+const victoryOverlay = document.getElementById('victoryOverlay');
+const closeOverlay = document.getElementById('closeOverlay');
 
-const gameWidth = 320;
-const playerWidth = 50;
-let playerX = 135;
-let obstacles = [];
-let score = 0;
-let animationFrame;
-let obstacleTimer;
-let running = false;
+const symbols = ['❤️', '🌹', '💌', '✨', '🎵', '💎'];
+let cards = [];
+let flippedCards = [];
+let matchedCount = 0;
+let moves = 0;
+let boardLocked = false;
 
-function setPlayerPosition() {
-    player.style.left = `${playerX}px`;
+function shuffle(array) {
+    return array
+        .map((value) => ({ value, sort: Math.random() }))
+        .sort((a, b) => a.sort - b.sort)
+        .map(({ value }) => value);
 }
 
-function createObstacle() {
-    const obstacle = document.createElement('div');
-    obstacle.className = 'obstacle';
-    const x = Math.floor(Math.random() * (gameWidth - 40));
-    obstacle.style.left = `${x}px`;
-    obstacle.style.top = '-50px';
-    game.appendChild(obstacle);
-    obstacles.push({ el: obstacle, y: -50, speed: 2 + Math.random() * 2 });
-}
+function createBoard() {
+    board.innerHTML = '';
+    const cardSymbols = shuffle([...symbols, ...symbols]);
 
-function updateObstacles() {
-    obstacles.forEach((item) => {
-        item.y += item.speed;
-        item.el.style.top = `${item.y}px`;
+    cards = cardSymbols.map((symbol, index) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'card';
+        button.setAttribute('aria-label', `Carta ${index + 1}`);
+        button.setAttribute('data-symbol', symbol);
+        button.setAttribute('data-index', index);
+        button.innerHTML = '<span class="card-face">?</span>';
+
+        button.addEventListener('click', () => handleCardClick(button));
+        return button;
     });
-    obstacles = obstacles.filter((item) => {
-        if (item.y > 520) {
-            game.removeChild(item.el);
-            score += 1;
-            scoreEl.textContent = score;
-            return false;
+
+    cards.forEach((card) => board.appendChild(card));
+}
+
+function flipCard(card) {
+    if (boardLocked || card.classList.contains('card--flipped') || card.classList.contains('card--matched')) {
+        return;
+    }
+
+    card.classList.add('card--flipped');
+    card.innerHTML = `<span class="card-face">${card.dataset.symbol}</span>`;
+    flippedCards.push(card);
+}
+
+function unflipCards() {
+    boardLocked = true;
+    setTimeout(() => {
+        flippedCards.forEach((card) => {
+            card.classList.remove('card--flipped');
+            card.innerHTML = '<span class="card-face">?</span>';
+        });
+        flippedCards = [];
+        boardLocked = false;
+    }, 800);
+}
+
+function markAsMatched() {
+    flippedCards.forEach((card) => card.classList.add('card--matched'));
+    matchedCount += 1;
+    flippedCards = [];
+}
+
+function updateScore() {
+    scoreEl.textContent = matchedCount;
+    movesEl.textContent = moves;
+}
+
+function handleCardClick(card) {
+    if (boardLocked || card.classList.contains('card--flipped') || card.classList.contains('card--matched')) {
+        return;
+    }
+
+    flipCard(card);
+
+    if (flippedCards.length === 2) {
+        moves += 1;
+        updateScore();
+
+        const [firstCard, secondCard] = flippedCards;
+        const sameSymbol = firstCard.dataset.symbol === secondCard.dataset.symbol;
+
+        if (sameSymbol) {
+            markAsMatched();
+            message.textContent = 'Você encontrou um par! Continue assim.';
+            if (matchedCount === symbols.length) {
+                message.textContent = 'Agora de par mesmo que falta é Raissa e o Zé!';
+                showVictoryOverlay();
+            }
+        } else {
+            message.textContent = 'Quase! Tente lembrar onde está o próximo símbolo.';
+            unflipCards();
         }
-        if (checkCollision(item)) {
-            endGame();
-            return false;
-        }
-        return true;
-    });
+    }
 }
 
-function checkCollision(obstacle) {
-    const playerRect = player.getBoundingClientRect();
-    const obstacleRect = obstacle.el.getBoundingClientRect();
-
-    return !(
-        playerRect.right < obstacleRect.left ||
-        playerRect.left > obstacleRect.right ||
-        playerRect.bottom < obstacleRect.top ||
-        playerRect.top > obstacleRect.bottom
-    );
+function showVictoryOverlay() {
+    victoryOverlay.classList.add('show');
 }
 
-function gameLoop() {
-    if (!running) return;
-    updateObstacles();
-    animationFrame = requestAnimationFrame(gameLoop);
+function hideVictoryOverlay() {
+    victoryOverlay.classList.remove('show');
 }
+
 
 function startGame() {
-    if (running) return;
-    running = true;
-    message.textContent = 'Jogo em andamento... Boa sorte!';
-    score = 0;
-    scoreEl.textContent = score;
-    obstacles.forEach((item) => game.removeChild(item.el));
-    obstacles = [];
-    playerX = 135;
-    setPlayerPosition();
-    obstacleTimer = setInterval(createObstacle, 900);
-    gameLoop();
-}
-
-function endGame() {
-    running = false;
-    clearInterval(obstacleTimer);
-    cancelAnimationFrame(animationFrame);
-    message.textContent = 'Game over! Aperte Reiniciar para tentar de novo.';
+    hideVictoryOverlay();
+    matchedCount = 0;
+    moves = 0;
+    boardLocked = false;
+    updateScore();
+    createBoard();
+    message.textContent = 'Jogo iniciado! Toque nas cartas para encontrar os pares.';
 }
 
 function resetGame() {
-    running = false;
-    clearInterval(obstacleTimer);
-    cancelAnimationFrame(animationFrame);
-    obstacles.forEach((item) => {
-        if (item.el.parentNode === game) {
-            game.removeChild(item.el);
-        }
-    });
-    obstacles = [];
-    score = 0;
-    scoreEl.textContent = score;
-    message.textContent = 'Pronto para começar. Aperte Começar.';
-    playerX = 135;
-    setPlayerPosition();
+    hideVictoryOverlay();
+    matchedCount = 0;
+    moves = 0;
+    boardLocked = false;
+    updateScore();
+    createBoard();
+    message.textContent = 'Pronto para começar. Toque em Começar quando estiver preparada.';
 }
-
-function movePlayer(direction) {
-    if (!running) return;
-    playerX += direction * 40;
-    playerX = Math.max(0, Math.min(gameWidth - playerWidth, playerX));
-    setPlayerPosition();
-}
-
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowLeft') {
-        movePlayer(-1);
-    } else if (event.key === 'ArrowRight') {
-        movePlayer(1);
-    }
-});
 
 startButton.addEventListener('click', startGame);
 resetButton.addEventListener('click', resetGame);
+closeOverlay.addEventListener('click', () => {
+    hideVictoryOverlay();
+    resetGame();
+});
 resetGame();
