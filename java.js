@@ -74,6 +74,17 @@ function updateScore() {
     movesEl.textContent = moves;
 }
 
+function createHeartBurst(card) {
+    const burst = document.createElement('div');
+    burst.className = 'heart-burst';
+    burst.textContent = '💖';
+    const rect = card.getBoundingClientRect();
+    burst.style.left = `${rect.left + rect.width / 2}px`;
+    burst.style.top = `${rect.top + rect.height / 2}px`;
+    document.body.appendChild(burst);
+    setTimeout(() => document.body.removeChild(burst), 1400);
+}
+
 function handleCardClick(card) {
     if (boardLocked || card.classList.contains('card--flipped') || card.classList.contains('card--matched')) {
         return;
@@ -90,6 +101,8 @@ function handleCardClick(card) {
 
         if (sameSymbol) {
             markAsMatched();
+            createHeartBurst(firstCard);
+            createHeartBurst(secondCard);
             message.textContent = 'Você encontrou um par! Continue assim.';
             if (matchedCount === symbols.length) {
                 message.textContent = 'Agora de par mesmo que falta é Raissa e o Zé!';

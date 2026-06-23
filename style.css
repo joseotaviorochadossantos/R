@@ -9,18 +9,42 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(180deg, #ff9a9e 0%, #fad0c4 50%, #fad0c4 100%);
+    background: radial-gradient(circle at top, #ffe5ec 0%, transparent 45%), linear-gradient(180deg, #ff9a9e 0%, #fad0c4 50%, #fad0c4 100%);
     color: #2f1a32;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     padding: 16px;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.35), transparent 16%),
+                      radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.24), transparent 14%),
+                      radial-gradient(circle at 50% 75%, rgba(255, 255, 255, 0.18), transparent 12%);
+    pointer-events: none;
 }
 
 .game-container {
     width: min(100%, 420px);
-    padding: 20px;
-    border-radius: 28px;
-    background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+    padding: 28px 22px 22px;
+    border-radius: 32px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.14);
+    position: relative;
+    overflow: hidden;
+}
+
+.game-container::after {
+    content: '💖';
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    font-size: 7rem;
+    opacity: 0.12;
+    transform: rotate(-25deg);
+    pointer-events: none;
 }
 
 header {
@@ -31,11 +55,19 @@ header {
 h1 {
     font-size: clamp(2rem, 4vw, 2.8rem);
     margin-bottom: 10px;
+    letter-spacing: 0.03em;
 }
 
 p {
     color: #5f3f6f;
     line-height: 1.6;
+}
+
+.subtitle {
+    margin-top: 10px;
+    color: #a23b6a;
+    font-size: 0.95rem;
+    font-weight: 600;
 }
 
 .score-panel {
@@ -52,7 +84,7 @@ p {
 .board {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
+    gap: 14px;
     margin-bottom: 18px;
 }
 
@@ -60,17 +92,27 @@ p {
     position: relative;
     width: 100%;
     aspect-ratio: 1 / 1;
-    border-radius: 18px;
+    border-radius: 22px;
     border: 2px solid #f9c5d1;
-    background: linear-gradient(180deg, #ffffff 0%, #ffeef6 100%);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.5), 0 10px 20px rgba(233, 118, 162, 0.12);
+    background: radial-gradient(circle at top left, #fff5f9 0%, #ffe4ee 65%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.6), 0 12px 24px rgba(233, 118, 162, 0.14);
     cursor: pointer;
     color: #8a2e59;
     font-size: 2rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.card::after {
+    content: '💕';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1rem;
+    opacity: 0.22;
+    transform: rotate(-8deg);
 }
 
 .card:focus-visible {
@@ -79,15 +121,22 @@ p {
 }
 
 .card--flipped {
-    background: #ffecf4;
+    background: #fff0f8;
     transform: translateY(-2px);
+    box-shadow: 0 14px 26px rgba(233, 118, 162, 0.16);
 }
 
 .card--matched {
     background: #ffd7e6;
     border-color: #ff95c2;
-    box-shadow: 0 0 0 3px rgba(255, 149, 194, 0.18);
+    box-shadow: 0 0 0 4px rgba(255, 149, 194, 0.25);
     cursor: default;
+    animation: beat 0.4s ease;
+}
+
+@keyframes beat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
 }
 
 .controls {
@@ -112,7 +161,7 @@ button {
 
 button:hover,
 button:focus-visible {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
 }
 
 #startButton {
@@ -153,9 +202,10 @@ button:focus-visible {
     width: min(100%, 340px);
     padding: 28px 24px;
     border-radius: 28px;
-    background: #ffffff;
+    background: linear-gradient(180deg, #ffffff 0%, #ffe7f1 100%);
     text-align: center;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 22px 70px rgba(0, 0, 0, 0.2);
+    animation: pop 0.32s ease;
 }
 
 .overlay-card p {
@@ -169,6 +219,37 @@ button:focus-visible {
     font-size: clamp(2rem, 5vw, 3rem);
     color: #e11d48;
     line-height: 1;
+    text-shadow: 0 2px 8px rgba(225, 29, 72, 0.25);
+}
+
+@keyframes pop {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.heart-burst {
+    position: fixed;
+    width: 24px;
+    height: 24px;
+    font-size: 1.28rem;
+    pointer-events: none;
+    opacity: 0.9;
+    animation: drift 1.4s ease-out forwards;
+}
+
+.score-panel div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.score-panel strong {
+    color: #9f2f64;
+}
+
+@keyframes drift {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-120px) translateX(20px) scale(1.4); opacity: 0; }
 }
 
 #closeOverlay {
@@ -191,3 +272,4 @@ button:focus-visible {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
